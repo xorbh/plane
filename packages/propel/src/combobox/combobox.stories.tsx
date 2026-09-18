@@ -47,7 +47,7 @@ const meta = {
           <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
           <ChevronExpandOutline className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Combobox.Button>
-        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72">
+        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72" modal={false}>
           {frameworks.map((framework) => (
             <Combobox.Option
               key={framework.value}
@@ -78,7 +78,7 @@ export const WithoutSearch: Story = {
           <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
           <ChevronExpandOutline className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Combobox.Button>
-        <Combobox.Options className="w-72">
+        <Combobox.Options className="w-72" modal={false}>
           {frameworks.map((framework) => (
             <Combobox.Option
               key={framework.value}
@@ -105,7 +105,7 @@ export const MultiSelect: Story = {
           <span className="truncate">{value.length > 0 ? `${value.length} selected` : "Select frameworks..."}</span>
           <ChevronExpandOutline className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Combobox.Button>
-        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72">
+        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72" modal={false}>
           {frameworks.map((framework) => (
             <Combobox.Option
               key={framework.value}
@@ -135,7 +135,7 @@ export const MultiSelectWithLimit: Story = {
             </span>
             <ChevronExpandOutline className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Combobox.Button>
-          <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72">
+          <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72" modal={false}>
             {frameworks.map((framework) => (
               <Combobox.Option
                 key={framework.value}
@@ -164,7 +164,7 @@ export const Disabled: Story = {
           <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
           <ChevronExpandOutline className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Combobox.Button>
-        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72">
+        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72" modal={false}>
           {frameworks.map((framework) => (
             <Combobox.Option
               key={framework.value}
@@ -190,7 +190,7 @@ export const DisabledOptions: Story = {
           <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
           <ChevronExpandOutline className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Combobox.Button>
-        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72">
+        <Combobox.Options showSearch searchPlaceholder="Search framework..." className="w-72" modal={false}>
           {frameworks.map((framework) => (
             <Combobox.Option
               key={framework.value}
@@ -217,7 +217,13 @@ export const CustomMaxHeight: Story = {
           <span>{value ? frameworks.find((f) => f.value === value)?.label : "Select framework..."}</span>
           <ChevronExpandOutline className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Combobox.Button>
-        <Combobox.Options showSearch searchPlaceholder="Search framework..." maxHeight="sm" className="w-72">
+        <Combobox.Options
+          showSearch
+          searchPlaceholder="Search framework..."
+          maxHeight="sm"
+          className="w-72"
+          modal={false}
+        >
           {frameworks.map((framework) => (
             <Combobox.Option
               key={framework.value}
@@ -244,6 +250,7 @@ export const CustomEmptyMessage: Story = {
           <ChevronExpandOutline className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Combobox.Button>
         <Combobox.Options
+          modal={false}
           showSearch
           searchPlaceholder="Search framework..."
           emptyMessage="No frameworks found. Try a different search."
