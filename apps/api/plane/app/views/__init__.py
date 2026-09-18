@@ -144,6 +144,14 @@ from .issue.label import LabelViewSet, BulkCreateIssueLabelsEndpoint
 
 from .issue.link import IssueLinkViewSet
 
+from .issue_type import (
+    IssueTypeViewSet,
+    IssuePropertyViewSet,
+    IssuePropertyOptionViewSet,
+    IssuePropertyValueEndpoint,
+    IssuePropertyValueBatchEndpoint,
+)
+
 from .issue.relation import IssueRelationViewSet
 
 from .issue.reaction import IssueReactionViewSet

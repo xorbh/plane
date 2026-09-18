@@ -84,6 +84,13 @@ from .issue import (
     IssueListDetailSerializer,
 )
 
+from .issue_type import (
+    IssueTypeSerializer,
+    IssuePropertySerializer,
+    IssuePropertyLiteSerializer,
+    IssuePropertyOptionSerializer,
+)
+
 from .module import (
     ModuleDetailSerializer,
     ModuleWriteSerializer,

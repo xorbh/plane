@@ -41,6 +41,7 @@ from plane.db.models import (
 )
 from plane.db.models.intake import IntakeIssueStatus
 from plane.utils.host import base_host
+from plane.utils.issue_type import enable_issue_types_for_project
 from plane.utils.order_queryset import PROJECT_ORDER_BY_ALLOWLIST, sanitize_order_by
 
 
@@ -355,6 +356,8 @@ class ProjectViewSet(BaseViewSet):
 
         if serializer.is_valid():
             serializer.save()
+            if serializer.validated_data.get("is_issue_type_enabled"):
+                enable_issue_types_for_project(project)
             if intake_view:
                 intake = Intake.objects.filter(project=project, is_default=True).first()
                 if not intake:
