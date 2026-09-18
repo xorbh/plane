@@ -1,0 +1,160 @@
+# Generated from ../docker-compose-local.yml by dev/generate-compose.py — do not edit by hand.
+# Differences: host ports remapped (db 15432, valkey 16379, minio 19000/19090, api 18000) and a Caddy
+# proxy on http://localhost:8085 that fronts the API, MinIO uploads and the host web dev server.
+# Run through dev/dc.sh so relative paths resolve from the repo root.
+services:
+  plane-redis:
+    image: valkey/valkey:7.2.11-alpine
+    restart: unless-stopped
+    networks:
+    - dev_env
+    volumes:
+    - redisdata:/data
+    ports:
+    - 16379:6379
+  plane-mq:
+    image: rabbitmq:3.13.6-management-alpine
+    restart: unless-stopped
+    networks:
+    - dev_env
+    volumes:
+    - rabbitmq_data:/var/lib/rabbitmq
+    env_file:
+    - .env
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST}
+  plane-minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    restart: unless-stopped
+    networks:
+    - dev_env
+    entrypoint: '/bin/sh -c " mkdir -p /export/${AWS_S3_BUCKET_NAME} && minio server
+      /export --console-address '':9090'' & sleep 5 && mc alias set myminio http://localhost:9000
+      ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} && mc mb myminio/${AWS_S3_BUCKET_NAME}
+      -p || true && tail -f /dev/null "
+
+      '
+    volumes:
+    - uploads:/export
+    env_file:
+    - .env
+    environment:
+      MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY}
+    ports:
+    - 19000:9000
+    - 19090:9090
+  plane-db:
+    image: postgres:15.7-alpine
+    restart: unless-stopped
+    networks:
+    - dev_env
+    command: postgres -c 'max_connections=1000'
+    volumes:
+    - pgdata:/var/lib/postgresql/data
+    env_file:
+    - .env
+    environment:
+      PGDATA: /var/lib/postgresql/data
+    ports:
+    - 15432:5432
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: unless-stopped
+    networks:
+    - dev_env
+    volumes:
+    - ./apps/api:/code
+    command: ./bin/docker-entrypoint-api-local.sh
+    env_file:
+    - ./apps/api/.env
+    depends_on:
+    - plane-db
+    - plane-redis
+    - plane-mq
+    ports:
+    - 18000:8000
+  worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: unless-stopped
+    networks:
+    - dev_env
+    volumes:
+    - ./apps/api:/code
+    command: ./bin/docker-entrypoint-worker.sh
+    env_file:
+    - ./apps/api/.env
+    depends_on:
+    - api
+    - plane-db
+    - plane-redis
+  beat-worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: unless-stopped
+    networks:
+    - dev_env
+    volumes:
+    - ./apps/api:/code
+    command: ./bin/docker-entrypoint-beat.sh
+    env_file:
+    - ./apps/api/.env
+    depends_on:
+    - api
+    - plane-db
+    - plane-redis
+  migrator:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+      args:
+        DOCKER_BUILDKIT: 1
+    restart: 'no'
+    networks:
+    - dev_env
+    volumes:
+    - ./apps/api:/code
+    command: ./bin/docker-entrypoint-migrator.sh --settings=plane.settings.local
+    env_file:
+    - ./apps/api/.env
+    depends_on:
+    - plane-db
+    - plane-redis
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    networks:
+    - dev_env
+    volumes:
+    - ./dev/Caddyfile:/etc/caddy/Caddyfile:ro
+    environment:
+      FILE_SIZE_LIMIT: '5242880'
+      BUCKET_NAME: uploads
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    ports:
+    - 8085:80
+    depends_on:
+    - api
+    - plane-minio
+volumes:
+  redisdata: null
+  uploads: null
+  pgdata: null
+  rabbitmq_data: null
+networks:
+  dev_env:
+    driver: bridge
