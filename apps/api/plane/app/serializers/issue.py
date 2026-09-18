@@ -42,7 +42,9 @@ from plane.db.models import (
     IssueDescriptionVersion,
     ProjectMember,
     EstimatePoint,
+    IssueType,
 )
+from plane.utils.issue_type import get_project_default_issue_type
 from plane.utils.content_validator import (
     validate_html_content,
     validate_binary_data,
@@ -99,6 +101,9 @@ class IssueCreateSerializer(BaseSerializer):
     )
     project_id = serializers.UUIDField(source="project.id", read_only=True)
     workspace_id = serializers.UUIDField(source="workspace.id", read_only=True)
+    type_id = serializers.PrimaryKeyRelatedField(
+        source="type", queryset=IssueType.objects.all(), required=False, allow_null=True
+    )
 
     class Meta:
         model = Issue
@@ -203,6 +208,10 @@ class IssueCreateSerializer(BaseSerializer):
         project_id = self.context["project_id"]
         workspace_id = self.context["workspace_id"]
         default_assignee_id = self.context["default_assignee_id"]
+
+        # Assign the project's default work item type when none was given
+        if validated_data.get("type") is None:
+            validated_data["type"] = get_project_default_issue_type(project_id)
 
         # Create Issue
         issue = Issue.objects.create(**validated_data, project_id=project_id)
@@ -781,10 +790,13 @@ class IssueSerializer(DynamicBaseSerializer):
     attachment_count = serializers.IntegerField(read_only=True)
     link_count = serializers.IntegerField(read_only=True)
 
+    type_id = serializers.PrimaryKeyRelatedField(source="type", read_only=True)
+
     class Meta:
         model = Issue
         fields = [
             "id",
+            "type_id",
             "name",
             "state_id",
             "sort_order",

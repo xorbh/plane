@@ -1463,6 +1463,83 @@ def delete_draft_issue_activity(
     )
 
 
+# Track changes in custom property values
+def track_property_values(
+    requested_data,
+    current_instance,
+    issue_id,
+    project_id,
+    workspace_id,
+    actor_id,
+    issue_activities,
+    epoch,
+):
+    from plane.db.models import IssueProperty
+    from plane.utils.issue_property import display_value
+
+    requested_values = (requested_data or {}).get("property_values") or {}
+    current_values = (current_instance or {}).get("property_values") or {}
+
+    for property_id, new_values in requested_values.items():
+        if not is_valid_uuid(str(property_id)):
+            continue
+        prop = IssueProperty.all_objects.filter(pk=property_id).first()
+        if prop is None:
+            continue
+        old_values = current_values.get(property_id) or []
+        new_values = new_values or []
+        if old_values == new_values:
+            continue
+        old_display = ", ".join(display_value(prop, value) for value in old_values)
+        new_display = ", ".join(display_value(prop, value) for value in new_values)
+        if not new_values:
+            comment = f"removed {prop.display_name}"
+        elif not old_values:
+            comment = f"set {prop.display_name} to {new_display}"
+        else:
+            comment = f"updated {prop.display_name} to {new_display}"
+        issue_activities.append(
+            IssueActivity(
+                issue_id=issue_id,
+                actor_id=actor_id,
+                verb="updated",
+                old_value=old_display,
+                new_value=new_display,
+                field="issue_property",
+                project_id=project_id,
+                workspace_id=workspace_id,
+                comment=comment,
+                old_identifier=prop.id,
+                new_identifier=prop.id,
+                epoch=epoch,
+            )
+        )
+
+
+def update_issue_property_activity(
+    requested_data,
+    current_instance,
+    issue_id,
+    project_id,
+    workspace_id,
+    actor_id,
+    issue_activities,
+    epoch,
+):
+    requested_data = json.loads(requested_data) if requested_data is not None else None
+    current_instance = json.loads(current_instance) if current_instance is not None else None
+    track_property_values(
+        requested_data=requested_data,
+        current_instance=current_instance,
+        issue_id=issue_id,
+        project_id=project_id,
+        workspace_id=workspace_id,
+        actor_id=actor_id,
+        issue_activities=issue_activities,
+        epoch=epoch,
+    )
+
+
 def create_intake_activity(
     requested_data,
     current_instance,
@@ -1565,6 +1642,7 @@ def issue_activity(
             "issue_draft.activity.updated": update_draft_issue_activity,
             "issue_draft.activity.deleted": delete_draft_issue_activity,
             "intake.activity.created": create_intake_activity,
+            "issue_property.activity.updated": update_issue_property_activity,
         }
 
         func = ACTIVITY_MAPPER.get(type)
