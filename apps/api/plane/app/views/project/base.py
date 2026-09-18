@@ -189,6 +189,7 @@ class ProjectViewSet(BaseViewSet):
             "page_view",
             "inbox_view",
             "guest_view_all_features",
+            "is_issue_type_enabled",
             "project_lead",
             "network",
             "created_at",

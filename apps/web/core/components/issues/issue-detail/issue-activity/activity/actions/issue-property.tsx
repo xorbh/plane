@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useEffect } from "react";
 import { observer } from "mobx-react";
 // plane imports
 import { EIssuePropertyType } from "@plane/types";
@@ -12,6 +13,7 @@ import { IssuePropertyTypeIcon } from "@/components/issue-types/property-icon";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useIssueTypes } from "@/hooks/store/use-issue-types";
+import { useProject } from "@/hooks/store/use-project";
 // local imports
 import { IssueActivityBlockComponent, IssueLink } from "./";
 
@@ -28,12 +30,23 @@ export const IssuePropertyActivity = observer(function IssuePropertyActivity(pro
   const {
     activity: { getActivityById },
   } = useIssueDetail();
-  const { getPropertyById } = useIssueTypes();
+  const { getPropertyById, isProjectFetched, fetchProjectIssueTypes } = useIssueTypes();
+  const { getProjectById } = useProject();
   const activity = getActivityById(activityId);
+  const projectId = activity?.project;
+  const workspaceSlug = activity?.workspace_detail?.slug;
+  const isEnabled = !!projectId && !!getProjectById(projectId)?.is_issue_type_enabled;
+  useEffect(() => {
+    if (!isEnabled || !workspaceSlug || !projectId) return;
+    if (!isProjectFetched(projectId)) void fetchProjectIssueTypes(workspaceSlug, projectId);
+  }, [isEnabled, workspaceSlug, projectId, isProjectFetched, fetchProjectIssueTypes]);
   if (!activity) return <></>;
 
   const property = getPropertyById(activity.new_identifier ?? activity.old_identifier);
-  const propertyName = property?.display_name ?? activity.comment?.replace(/^(set|updated|removed)\s/, "") ?? "";
+  // Fallback for deleted properties: the comment is "set <name> to <value>", "updated <name> to <value>"
+  // or "removed <name>".
+  const commentMatch = activity.comment?.match(/^(?:set|updated|removed)\s(.+?)(?:\sto\s[\s\S]*)?$/);
+  const propertyName = property?.display_name ?? commentMatch?.[1] ?? "";
   const oldValue = activity.old_value;
   const newValue = activity.new_value;
 

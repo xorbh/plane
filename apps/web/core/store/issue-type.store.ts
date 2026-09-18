@@ -22,11 +22,11 @@ export interface IIssueTypeStore {
   propertyMap: Record<string, TIssueProperty>;
   // helpers
   isProjectFetched: (projectId: string | null | undefined) => boolean;
-  getProjectIssueTypeIds: (projectId: string | null | undefined, activeOnly?: boolean) => string[];
-  getProjectIssueTypes: (projectId: string | null | undefined, activeOnly?: boolean) => TIssueType[];
+  getProjectIssueTypeIds: (projectId: string | null | undefined, activeOnly: boolean) => string[];
+  getProjectIssueTypes: (projectId: string | null | undefined, activeOnly: boolean) => TIssueType[];
   getIssueTypeById: (issueTypeId: string | null | undefined) => TIssueType | undefined;
   getProjectDefaultIssueTypeId: (projectId: string | null | undefined) => string | null;
-  getPropertiesByIssueTypeId: (issueTypeId: string | null | undefined, activeOnly?: boolean) => TIssueProperty[];
+  getPropertiesByIssueTypeId: (issueTypeId: string | null | undefined, activeOnly: boolean) => TIssueProperty[];
   getPropertyById: (propertyId: string | null | undefined) => TIssueProperty | undefined;
   // fetch
   fetchProjectIssueTypes: (workspaceSlug: string, projectId: string, force?: boolean) => Promise<void>;
@@ -108,10 +108,12 @@ export class IssueTypeStore implements IIssueTypeStore {
   }
 
   // ------------------------------------------------------------- helpers
+  // NOTE: computedFn memoizes by argument count, so every helper takes an explicit
+  // `activeOnly` flag and callers must always pass it.
 
   isProjectFetched = computedFn((projectId: string | null | undefined) => !!projectId && !!this.fetchedMap[projectId]);
 
-  getProjectIssueTypes = computedFn((projectId: string | null | undefined, activeOnly = false) => {
+  getProjectIssueTypes = computedFn((projectId: string | null | undefined, activeOnly: boolean) => {
     if (!projectId) return [];
     const types = Object.values(this.issueTypeMap).filter(
       (issueType) => issueType.project_ids?.includes(projectId) && (!activeOnly || issueType.is_active)
@@ -119,7 +121,7 @@ export class IssueTypeStore implements IIssueTypeStore {
     return sortBy(types, [(type) => (type.is_default ? 0 : 1), "level", "created_at"]);
   });
 
-  getProjectIssueTypeIds = computedFn((projectId: string | null | undefined, activeOnly = false) =>
+  getProjectIssueTypeIds = computedFn((projectId: string | null | undefined, activeOnly: boolean) =>
     this.getProjectIssueTypes(projectId, activeOnly).map((issueType) => issueType.id)
   );
 
@@ -128,11 +130,11 @@ export class IssueTypeStore implements IIssueTypeStore {
   );
 
   getProjectDefaultIssueTypeId = computedFn((projectId: string | null | undefined) => {
-    const defaultType = this.getProjectIssueTypes(projectId).find((issueType) => issueType.is_default);
+    const defaultType = this.getProjectIssueTypes(projectId, false).find((issueType) => issueType.is_default);
     return defaultType?.id ?? null;
   });
 
-  getPropertiesByIssueTypeId = computedFn((issueTypeId: string | null | undefined, activeOnly = false) => {
+  getPropertiesByIssueTypeId = computedFn((issueTypeId: string | null | undefined, activeOnly: boolean) => {
     if (!issueTypeId) return [];
     const properties = Object.values(this.propertyMap).filter(
       (property) => property.issue_type === issueTypeId && (!activeOnly || property.is_active)
@@ -193,7 +195,7 @@ export class IssueTypeStore implements IIssueTypeStore {
     const issueType = await this.issueTypeService.updateIssueType(workspaceSlug, projectId, issueTypeId, data);
     runInAction(() => {
       if (issueType.is_default) {
-        this.getProjectIssueTypes(projectId).forEach((type) => {
+        this.getProjectIssueTypes(projectId, false).forEach((type) => {
           if (type.id !== issueType.id) set(this.issueTypeMap, [type.id, "is_default"], false);
         });
       }
