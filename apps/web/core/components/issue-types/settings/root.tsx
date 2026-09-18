@@ -39,7 +39,7 @@ export const ProjectIssueTypesSettings = observer(function ProjectIssueTypesSett
   // derived values
   const project = getProjectById(projectId);
   const isEnabled = !!project?.is_issue_type_enabled;
-  const issueTypes = getProjectIssueTypes(projectId);
+  const issueTypes = getProjectIssueTypes(projectId, false);
   const isLoading = !isProjectFetched(projectId) && !!loaderMap[projectId];
 
   useEffect(() => {

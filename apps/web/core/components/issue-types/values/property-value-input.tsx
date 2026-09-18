@@ -10,11 +10,12 @@ import { Switch } from "@makeplane/propel/components/switch";
 // plane imports
 import { EIssuePropertyType } from "@plane/types";
 import type { TIssueProperty, TIssuePropertyValue } from "@plane/types";
-import { CustomSearchSelect, Input, TextArea } from "@plane/ui";
+import { Input, TextArea } from "@plane/ui";
 import { cn, renderFormattedPayloadDate } from "@plane/utils";
 // components
 import { DateDropdown } from "@/components/dropdowns/date";
 import { MemberDropdown } from "@/components/dropdowns/member/dropdown";
+import { PropertyOptionDropdown } from "@/components/dropdowns/property-option";
 // local imports
 import { isMemberProperty } from "../helpers";
 
@@ -231,61 +232,24 @@ export const PropertyValueInput = observer(function PropertyValueInput(props: Pr
         />
       );
     }
-    case EIssuePropertyType.OPTION: {
-      const options = (property.options ?? [])
-        .filter((option) => option.is_active || value.includes(option.id))
-        .map((option) => ({
-          value: option.id,
-          query: option.name,
-          content: <span className="truncate">{option.name}</span>,
-        }));
-      const selectedNames = value
-        .map((id) => property.options?.find((option) => option.id === id)?.name)
-        .filter(Boolean) as string[];
-      const label = (
-        <span
-          className={cn(
-            "flex h-7 w-full items-center truncate rounded-sm px-2 text-body-xs-regular",
-            isSidebar ? "hover:bg-layer-transparent-hover" : "h-7 rounded-md border-[0.5px] border-strong",
-            selectedNames.length === 0 && "text-placeholder",
-            hasError && "border-danger-strong"
-          )}
-        >
-          {selectedNames.length > 0 ? selectedNames.join(", ") : property.is_multi ? "Select options" : "Select option"}
-        </span>
-      );
-      if (property.is_multi) {
-        return (
-          <CustomSearchSelect
-            value={value.map(String)}
-            onChange={(ids: string[]) => onChange(ids ?? [])}
-            options={options}
-            multiple
-            customButton={label}
-            customButtonClassName="w-full"
-            className="w-full"
-            disabled={disabled}
-            maxHeight="md"
-            noChevron
-            tabIndex={tabIndex}
-          />
-        );
-      }
+    case EIssuePropertyType.OPTION:
       return (
-        <CustomSearchSelect
-          value={first !== undefined ? String(first) : null}
-          onChange={(id: string | null) => onChange(id ? [id] : [])}
-          options={options}
-          customButton={label}
-          customButtonClassName="w-full"
-          className="w-full"
+        <PropertyOptionDropdown
+          property={property}
+          value={value.map(String)}
+          onChange={(ids) => onChange(ids)}
           disabled={disabled}
-          maxHeight="md"
-          noChevron
+          placeholder={property.is_multi ? "Select options" : "Select option"}
+          buttonVariant={isSidebar ? "transparent-with-text" : "border-with-text"}
+          className={cn("group", isSidebar && "w-full grow")}
+          buttonContainerClassName={isSidebar ? "w-full text-left h-7.5" : undefined}
+          buttonClassName={cn("text-body-xs-regular", hasError && "border-danger-strong")}
+          hideIcon={isSidebar}
+          dropdownArrow={isSidebar}
+          dropdownArrowClassName="h-3.5 w-3.5 hidden group-hover:inline"
           tabIndex={tabIndex}
         />
       );
-    }
     default:
       return null;
   }

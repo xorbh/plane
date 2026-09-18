@@ -41,7 +41,7 @@ export const IssueTypeSettingsItem = observer(function IssueTypeSettingsItem(pro
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   // derived values
-  const properties = getPropertiesByIssueTypeId(issueType.id);
+  const properties = getPropertiesByIssueTypeId(issueType.id, false);
   const activeCount = properties.filter((property) => property.is_active).length;
 
   const handleSetDefault = async () => {
