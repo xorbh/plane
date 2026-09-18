@@ -98,13 +98,39 @@ export const PropertyOptionDropdown = observer(function PropertyOptionDropdown(p
     setQuery,
   });
 
-  const dropdownOnChange = (val: string | string[] | null) => {
+  // Headless UI's Combobox.Option has no click handler of its own: it selects through a
+  // document level pointer listener that is only armed while its internal open state is
+  // set, which is not reliable when the list is opened from our own button. Options
+  // therefore handle clicks directly; keyboard selection still arrives via onChange.
+  const lastChangeAt = useRef(0);
+
+  const applyChange = (val: string | string[] | null) => {
+    lastChangeAt.current = Date.now();
     if (isMulti) {
       onChange(Array.isArray(val) ? val : []);
       return;
     }
     onChange(val && !Array.isArray(val) ? [val] : []);
     handleClose();
+  };
+
+  const dropdownOnChange = (val: string | string[] | null) => applyChange(val);
+
+  const handleOptionClick = (optionId: string | null) => {
+    // Skip if Headless UI already handled this pointer interaction
+    if (Date.now() - lastChangeAt.current < 150) return;
+    if (isMulti) {
+      const current = value.map(String);
+      const next =
+        optionId === null
+          ? []
+          : current.includes(optionId)
+            ? current.filter((id) => id !== optionId)
+            : [...current, optionId];
+      applyChange(next);
+      return;
+    }
+    applyChange(optionId);
   };
 
   const comboButton = button ? (
@@ -167,7 +193,9 @@ export const PropertyOptionDropdown = observer(function PropertyOptionDropdown(p
       {...(isMulti ? { multiple: true } : {})}
     >
       {isOpen && (
-        <Combobox.Options as="ul" className="fixed z-10" static>
+        // modal={false}: in modal mode Headless UI marks everything outside the input's
+        // ancestry inert, which includes this list because the search input lives inside it.
+        <Combobox.Options as="ul" className="fixed z-10" static modal={false}>
           <div
             className="my-1 w-52 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 shadow-raised-200 focus:outline-none"
             ref={setPopperElement}
@@ -189,7 +217,14 @@ export const PropertyOptionDropdown = observer(function PropertyOptionDropdown(p
             </div>
             <div className="mt-2 max-h-48 space-y-1 overflow-y-scroll">
               {!isMulti && !property.is_required && value.length > 0 && (
-                <Combobox.Option as="li" value={null}>
+                <Combobox.Option
+                  as="li"
+                  value={null}
+                  onClick={() => handleOptionClick(null)}
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === "Enter" || e.key === " ") handleOptionClick(null);
+                  }}
+                >
                   {({ active }) => (
                     <div
                       className={cn(
@@ -204,7 +239,15 @@ export const PropertyOptionDropdown = observer(function PropertyOptionDropdown(p
               )}
               {filteredOptions.length > 0 ? (
                 filteredOptions.map((option) => (
-                  <Combobox.Option as="li" key={option.value} value={option.value}>
+                  <Combobox.Option
+                    as="li"
+                    key={option.value}
+                    value={option.value}
+                    onClick={() => handleOptionClick(option.value)}
+                    onKeyDown={(e: React.KeyboardEvent) => {
+                      if (e.key === "Enter" || e.key === " ") handleOptionClick(option.value);
+                    }}
+                  >
                     {({ active, selected }) => (
                       <div
                         className={cn(
