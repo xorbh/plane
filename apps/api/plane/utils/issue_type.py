@@ -13,7 +13,7 @@ from plane.db.models import Issue, IssueType, ProjectIssueType
 DEFAULT_ISSUE_TYPE_NAME = "Task"
 DEFAULT_ISSUE_TYPE_LOGO = {
     "in_use": "icon",
-    "icon": {"name": "Layers", "color": "#6695FF", "background_color": "#E5EAFF"},
+    "icon": {"name": "task_alt", "color": "#6695FF", "background_color": "#E5EAFF"},
 }
 
 
@@ -33,6 +33,8 @@ def get_project_default_issue_type(project_id):
 def set_project_default_issue_type(project_id, issue_type):
     """Make ``issue_type`` the single default type of the project."""
     with transaction.atomic():
+        # Serialize concurrent default changes for the project
+        list(ProjectIssueType.objects.select_for_update().filter(project_id=project_id).values_list("id", flat=True))
         IssueType.objects.filter(
             project_issue_types__project_id=project_id,
             project_issue_types__deleted_at__isnull=True,

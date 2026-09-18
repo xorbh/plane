@@ -17,6 +17,9 @@ from plane.app.views.base import BaseViewSet
 from plane.db.models import IssueProperty, IssuePropertyOption, IssuePropertyTypeChoices, IssueType, Project
 
 
+MAX_INLINE_OPTIONS = 100
+
+
 class IssuePropertyViewSet(BaseViewSet):
     """CRUD for custom property definitions."""
 
@@ -65,6 +68,12 @@ class IssuePropertyViewSet(BaseViewSet):
             prop = serializer.save(issue_type=issue_type, project_id=project_id)
             # Allow options to be created in the same request for dropdown properties
             options = request.data.get("options") or []
+            if isinstance(options, list) and len(options) > MAX_INLINE_OPTIONS:
+                transaction.set_rollback(True)
+                return Response(
+                    {"options": f"At most {MAX_INLINE_OPTIONS} options can be created in one request"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             if prop.property_type == IssuePropertyTypeChoices.OPTION and isinstance(options, list):
                 created = []
                 for index, option in enumerate(options):

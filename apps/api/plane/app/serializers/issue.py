@@ -130,6 +130,18 @@ class IssueCreateSerializer(BaseSerializer):
         allow_triage = self.context.get("allow_triage_state", False)
         state_manager = State.triage_objects if allow_triage else State.objects
 
+        # Work item type must belong to this project
+        issue_type = attrs.get("type")
+        if (
+            issue_type is not None
+            and not IssueType.objects.filter(
+                pk=issue_type.pk,
+                project_issue_types__project_id=self.context.get("project_id"),
+                project_issue_types__deleted_at__isnull=True,
+            ).exists()
+        ):
+            raise serializers.ValidationError({"type_id": "Work item type is not valid for this project"})
+
         if (
             attrs.get("start_date", None) is not None
             and attrs.get("target_date", None) is not None
