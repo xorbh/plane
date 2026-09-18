@@ -6,7 +6,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
-import { Switch } from "@makeplane/propel/components/switch";
+import { Switch } from "@plane/propel/switch";
 import { Plus, X } from "lucide-react";
 // plane imports
 import { Button } from "@plane/propel/button";
@@ -512,8 +512,8 @@ export const IssuePropertyModal = observer(function IssuePropertyModal(props: Pr
                       {isEdit && option.id && (
                         <Switch
                           size="sm"
-                          checked={option.is_active}
-                          onCheckedChange={(checked: boolean) => setOption(index, { is_active: checked })}
+                          value={option.is_active}
+                          onChange={(checked: boolean) => setOption(index, { is_active: checked })}
                           aria-label="Option active"
                         />
                       )}
@@ -561,8 +561,8 @@ export const IssuePropertyModal = observer(function IssuePropertyModal(props: Pr
               <div className="flex items-center gap-2">
                 <Switch
                   size="sm"
-                  checked={canBeRequired && form.is_required}
-                  onCheckedChange={(checked: boolean) => update("is_required", checked)}
+                  value={canBeRequired && form.is_required}
+                  onChange={(checked: boolean) => update("is_required", checked)}
                   disabled={!canBeRequired}
                   aria-label="Mandatory property"
                 />
@@ -579,8 +579,8 @@ export const IssuePropertyModal = observer(function IssuePropertyModal(props: Pr
                 <div className="flex items-center gap-2">
                   <Switch
                     size="sm"
-                    checked={form.is_active}
-                    onCheckedChange={(checked: boolean) => update("is_active", checked)}
+                    value={form.is_active}
+                    onChange={(checked: boolean) => update("is_active", checked)}
                     aria-label="Active"
                   />
                   <span className="text-caption-sm-regular text-tertiary">

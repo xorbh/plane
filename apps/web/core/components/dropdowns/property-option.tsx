@@ -11,7 +11,7 @@ import { usePopper } from "react-popper";
 import { Combobox } from "@headlessui/react";
 import { ListChecks } from "lucide-react";
 // plane imports
-import { ChevronDownOutline, SearchOutline, TickOutline } from "@makeplane/propel/icons";
+import { CheckIcon, ChevronDownIcon, SearchIcon } from "@plane/propel/icons";
 import type { TIssueProperty } from "@plane/types";
 import { ComboDropDown } from "@plane/ui";
 import { cn } from "@plane/utils";
@@ -143,7 +143,7 @@ export const PropertyOptionDropdown = observer(function PropertyOptionDropdown(p
           <span className={cn("truncate", selectedNames.length === 0 && "text-placeholder")}>{buttonText}</span>
         )}
         {dropdownArrow && (
-          <ChevronDownOutline className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
+          <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
         )}
       </DropdownButton>
     </button>
@@ -175,7 +175,7 @@ export const PropertyOptionDropdown = observer(function PropertyOptionDropdown(p
             {...attributes.popper}
           >
             <div className="flex items-center gap-1.5 rounded-sm border border-subtle bg-surface-2 px-2">
-              <SearchOutline className="h-3.5 w-3.5 text-placeholder" />
+              <SearchIcon className="h-3.5 w-3.5 text-placeholder" />
               <Combobox.Input
                 as="input"
                 ref={inputRef}
@@ -217,7 +217,7 @@ export const PropertyOptionDropdown = observer(function PropertyOptionDropdown(p
                         )}
                       >
                         <span className="flex-grow truncate">{option.content}</span>
-                        {selected && <TickOutline className="h-3.5 w-3.5 flex-shrink-0" />}
+                        {selected && <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />}
                       </div>
                     )}
                   </Combobox.Option>

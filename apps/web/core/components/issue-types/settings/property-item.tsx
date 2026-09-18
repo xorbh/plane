@@ -6,11 +6,11 @@
 
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { Switch } from "@makeplane/propel/components/switch";
+import { Switch } from "@plane/propel/switch";
 import { Pencil, Trash2 } from "lucide-react";
 // plane imports
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import { Tooltip } from "@makeplane/propel/components/tooltip";
+import { Tooltip } from "@plane/propel/tooltip";
 import { EIssuePropertyType } from "@plane/types";
 import type { TIssueProperty } from "@plane/types";
 import { AlertModalCore } from "@plane/ui";
@@ -117,12 +117,12 @@ export const IssuePropertySettingsItem = observer(function IssuePropertySettings
         </div>
         {isAdmin && (
           <div className="flex shrink-0 items-center gap-1">
-            <Tooltip label={property.is_active ? "Click to disable" : "Click to enable"}>
+            <Tooltip tooltipContent={property.is_active ? "Click to disable" : "Click to enable"}>
               <div className="flex items-center">
                 <Switch
                   size="sm"
-                  checked={property.is_active}
-                  onCheckedChange={(checked: boolean) => void handleToggleActive(checked)}
+                  value={property.is_active}
+                  onChange={(checked: boolean) => void handleToggleActive(checked)}
                   aria-label="Active"
                 />
               </div>

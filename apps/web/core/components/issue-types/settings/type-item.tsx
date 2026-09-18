@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { Switch } from "@makeplane/propel/components/switch";
+import { Switch } from "@plane/propel/switch";
 import { ChevronDown, Plus } from "lucide-react";
 // plane imports
 import { Button } from "@plane/propel/button";
@@ -140,8 +140,8 @@ export const IssueTypeSettingsItem = observer(function IssueTypeSettingsItem(pro
             <div className="flex shrink-0 items-center gap-2">
               <Switch
                 size="sm"
-                checked={issueType.is_active}
-                onCheckedChange={(checked: boolean) => void handleToggleActive(checked)}
+                value={issueType.is_active}
+                onChange={(checked: boolean) => void handleToggleActive(checked)}
                 disabled={issueType.is_default}
                 aria-label="Active"
               />

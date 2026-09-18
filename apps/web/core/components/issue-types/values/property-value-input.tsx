@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import { Switch } from "@makeplane/propel/components/switch";
+import { Switch } from "@plane/propel/switch";
 // plane imports
 import { EIssuePropertyType } from "@plane/types";
 import type { TIssueProperty, TIssuePropertyValue } from "@plane/types";
@@ -164,8 +164,8 @@ export const PropertyValueInput = observer(function PropertyValueInput(props: Pr
         <div className={cn("flex h-7 items-center gap-2", isSidebar && "px-2")}>
           <Switch
             size="sm"
-            checked={first === true}
-            onCheckedChange={(checked: boolean) => onChange([checked])}
+            value={first === true}
+            onChange={(checked: boolean) => onChange([checked])}
             disabled={disabled}
             aria-label={property.display_name}
           />
