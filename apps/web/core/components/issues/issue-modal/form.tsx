@@ -10,7 +10,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
-import { FormProvider, useForm } from "react-hook-form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 // editor
 import { ETabIndices, DEFAULT_WORK_ITEM_FORM_VALUES } from "@plane/constants";
 import type { EditorRefApi } from "@plane/editor";
@@ -36,6 +36,8 @@ import {
   IssueProjectSelect,
   IssueTitleInput,
 } from "@/components/issues/issue-modal/components";
+import { IssueAdditionalProperties } from "@/components/issues/issue-modal/components/additional-properties";
+import { IssueTypeSelect } from "@/components/issue-types/type-select";
 // helpers
 // hooks
 import { useIssueModal } from "@/hooks/context/use-issue-modal";
@@ -368,6 +370,23 @@ export const IssueFormRoot = observer(function IssueFormRoot(props: IssueFormPro
                     disabled={!!data?.id || !!data?.sourceIssueId || isProjectSelectionDisabled}
                     handleFormChange={handleFormChange}
                   />
+                  <Controller
+                    control={control}
+                    name="type_id"
+                    render={({ field: { value, onChange } }) => (
+                      <IssueTypeSelect
+                        projectId={projectId}
+                        value={value}
+                        onChange={(issueTypeId) => {
+                          onChange(issueTypeId);
+                          handleFormChange();
+                        }}
+                        disabled={isDisabled}
+                        className="h-7"
+                        buttonClassName="border-none bg-layer-transparent"
+                      />
+                    )}
+                  />
                 </div>
               </div>
               {watch("parent_id") && selectedParentIssue && (
@@ -426,6 +445,13 @@ export const IssueFormRoot = observer(function IssueFormRoot(props: IssueFormPro
               )}
             >
               <div className="pb-3">
+                <IssueAdditionalProperties
+                  projectId={projectId}
+                  workspaceSlug={workspaceSlug?.toString()}
+                  issueTypeId={watch("type_id")}
+                  issueId={data?.id}
+                  disabled={isDisabled}
+                />
                 <IssueDefaultProperties
                   control={control}
                   id={data?.id}

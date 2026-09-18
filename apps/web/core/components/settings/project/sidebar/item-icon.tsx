@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { Layers } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Users, Zap } from "lucide-react";
 // plane imports
@@ -30,6 +31,7 @@ export const PROJECT_SETTINGS_ICONS: Record<TProjectSettingsTabs, LucideIcon | R
   features_views: ViewsIcon,
   features_pages: PageIcon,
   features_intake: IntakeIcon,
+  features_work_item_types: Layers,
   states: StatePropertyIcon,
   labels: LabelPropertyIcon,
   estimates: EstimatePropertyIcon,

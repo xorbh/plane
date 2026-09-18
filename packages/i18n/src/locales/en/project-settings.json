@@ -428,6 +428,13 @@
         "loading": "Updating project feature...",
         "success": "Project feature updated successfully.",
         "error": "Something went wrong while updating project feature. Please try again."
+      },
+      "work_item_types": {
+        "title": "Work item types",
+        "short_title": "Work item types",
+        "description": "Define types like Bug, Story or Request, each with its own custom properties.",
+        "toggle_title": "Enable work item types",
+        "toggle_description": "Adds a default Task type to this project. Once enabled, work item types cannot be turned off."
       }
     },
     "project_updates": {
