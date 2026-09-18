@@ -130,6 +130,70 @@ class TestIssueTypeEnablement:
 
 
 @pytest.mark.contract
+class TestIssueTypeScoping:
+    @pytest.fixture
+    def other_project(self, db, workspace, create_user):
+        project = Project.objects.create(name="Other", identifier="OTH", workspace=workspace, created_by=create_user)
+        ProjectMember.objects.create(project=project, member=create_user, role=20, is_active=True)
+        State.objects.create(name="Todo", project=project, workspace=workspace, group="backlog", default=True)
+        return project
+
+    @pytest.mark.django_db
+    def test_type_id_must_belong_to_project(self, session_client, workspace, project, other_project):
+        enable_types(session_client, workspace, project)
+        foreign_type = enable_types(session_client, workspace, other_project)
+        response = session_client.post(
+            base_url(workspace, project) + "issues/", {"name": "x", "type_id": str(foreign_type.id)}, format="json"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        issue = create_issue(project, None)
+        response = session_client.patch(
+            base_url(workspace, project) + f"issues/{issue.id}/", {"type_id": str(foreign_type.id)}, format="json"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        issue.refresh_from_db()
+        assert issue.type_id != foreign_type.id
+
+    @pytest.mark.django_db
+    def test_issue_relation_value_must_be_in_project(self, session_client, workspace, project, other_project):
+        issue_type = enable_types(session_client, workspace, project)
+        relation = create_property(
+            session_client,
+            workspace,
+            project,
+            issue_type,
+            display_name="Blocked by",
+            property_type="RELATION",
+            relation_type="ISSUE",
+        )
+        issue = create_issue(project, issue_type)
+        foreign_issue = create_issue(other_project, None, name="Foreign")
+        url = base_url(workspace, project) + f"issues/{issue.id}/issue-property-values/"
+        response = session_client.post(url, {"property_values": {relation["id"]: str(foreign_issue.id)}}, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        sibling = create_issue(project, issue_type, name="Sibling")
+        response = session_client.post(url, {"property_values": {relation["id"]: str(sibling.id)}}, format="json")
+        assert response.status_code == status.HTTP_200_OK, response.json()
+
+    @pytest.mark.django_db
+    def test_batch_excludes_deleted_issues(self, session_client, workspace, project):
+        issue_type = enable_types(session_client, workspace, project)
+        prop = create_property(session_client, workspace, project, issue_type, display_name="Secret")
+        issue = create_issue(project, issue_type)
+        session_client.post(
+            base_url(workspace, project) + f"issues/{issue.id}/issue-property-values/",
+            {"property_values": {prop["id"]: "hidden"}},
+            format="json",
+        )
+        issue.delete()
+        response = session_client.post(
+            base_url(workspace, project) + "issue-property-values/batch/", {"issue_ids": [str(issue.id)]}, format="json"
+        )
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json() == {}
+
+
+@pytest.mark.contract
 class TestIssueTypeAPI:
     @pytest.mark.django_db
     def test_create_list_update_delete_type(self, session_client, workspace, project):

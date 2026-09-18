@@ -129,7 +129,7 @@ class IssuePropertyValueEndpoint(BaseAPIView):
         before = get_issue_property_values([issue.id], project_id).get(str(issue.id), {})
 
         with transaction.atomic():
-            IssuePropertyValue.objects.filter(issue=issue, property_id__in=list(decoded.keys())).delete(soft=False)
+            IssuePropertyValue.objects.filter(issue=issue, property_id__in=list(decoded.keys())).delete()
             rows = []
             for prop, python_values in decoded.values():
                 for python_value in python_values:
@@ -184,7 +184,7 @@ class IssuePropertyValueBatchEndpoint(BaseAPIView):
         if len(issue_ids) > 500:
             return Response({"error": "At most 500 issue ids per request"}, status=status.HTTP_400_BAD_REQUEST)
         visible_ids = list(
-            Issue.all_objects.filter(id__in=issue_ids, project_id=project_id, workspace__slug=slug).values_list(
+            Issue.issue_objects.filter(id__in=issue_ids, project_id=project_id, workspace__slug=slug).values_list(
                 "id", flat=True
             )
         )

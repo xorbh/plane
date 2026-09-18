@@ -172,9 +172,9 @@ def decode_wire_value(prop: IssueProperty, value: Any, *, option_ids: set | None
             if not exists:
                 raise PropertyValueError("Value must be a member of this project")
         else:
-            exists = Issue.objects.filter(id=related_id, workspace_id=prop.workspace_id).exists()
+            exists = Issue.objects.filter(id=related_id, project_id=prop.project_id).exists()
             if not exists:
-                raise PropertyValueError("Value must be a work item in this workspace")
+                raise PropertyValueError("Value must be a work item in this project")
         return related_id
 
     raise PropertyValueError("Unsupported property type")
