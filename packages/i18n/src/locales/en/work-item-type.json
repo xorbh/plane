@@ -473,5 +473,52 @@
         "message": "Work item type cannot be updated since it breaks the hierarchy rules."
       }
     }
+  },
+  "custom_properties": {
+    "label": "Custom properties",
+    "sidebar_title": "Properties",
+    "no_value": "None",
+    "add_value": "Add value",
+    "select_type": "Select type",
+    "type": "Type",
+    "required_error": "{name} is required",
+    "invalid_email": "Enter a valid email address",
+    "invalid_url": "Enter a valid URL",
+    "invalid_number": "Enter a valid number",
+    "activity": {
+      "set": "set {name} to",
+      "updated": "updated {name} to",
+      "removed": "removed {name}"
+    },
+    "settings": {
+      "types_heading": "Types",
+      "default_badge": "Default",
+      "inactive_badge": "Inactive",
+      "no_properties": "No custom properties yet. Add one to collect structured data on every work item of this type.",
+      "property_count": "{count, plural, one {# property} other {# properties}}",
+      "add_type": "Add work item type",
+      "edit_type": "Edit",
+      "delete_type": "Delete",
+      "delete_type_confirm": "Deleting this type moves its work items to the default type and permanently removes its custom property values.",
+      "delete_property_confirm": "Deleting this property permanently removes its values from every work item.",
+      "relation_type": {
+        "label": "Relation",
+        "user": "Member",
+        "issue": "Work item"
+      },
+      "multi_select": "Allow multiple values",
+      "date_format": "Date format",
+      "text_format": "Text format",
+      "min": "Minimum",
+      "max": "Maximum",
+      "default_value": "Default value",
+      "options_hint": "Add the options users can pick from.",
+      "toast": {
+        "type_created": "Work item type created.",
+        "type_updated": "Work item type updated.",
+        "type_deleted": "Work item type deleted.",
+        "error": "Something went wrong. Please try again."
+      }
+    }
   }
 }

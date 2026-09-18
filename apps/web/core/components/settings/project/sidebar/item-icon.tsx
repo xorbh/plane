@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { Layers } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
   CyclesOutline,
@@ -31,6 +32,7 @@ export const PROJECT_SETTINGS_ICONS: Record<TProjectSettingsTabs, LucideIcon | R
   features_views: ViewsOutline,
   features_pages: PagesOutline,
   features_intake: IntakeOutline,
+  features_work_item_types: Layers,
   states: StateOutline,
   labels: LabelsOutline,
   estimates: EstimateOutline,

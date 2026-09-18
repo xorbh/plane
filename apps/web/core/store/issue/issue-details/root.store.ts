@@ -12,6 +12,7 @@ import type {
   TIssueComment,
   TIssueCommentReaction,
   TIssueLink,
+  TIssuePropertyValues,
   TIssueReaction,
   TIssueRelationTypes,
   TIssueServiceType,
@@ -31,6 +32,8 @@ import { IssueStore } from "./issue.store";
 import type { IIssueStore, IIssueStoreActions } from "./issue.store";
 import { IssueLinkStore } from "./link.store";
 import type { IIssueLinkStore, IIssueLinkStoreActions } from "./link.store";
+import { IssuePropertyValueStore } from "./property-value.store";
+import type { IIssuePropertyValueStore, IIssuePropertyValueStoreActions } from "./property-value.store";
 import { IssueReactionStore } from "./reaction.store";
 import type { IIssueReactionStore, IIssueReactionStoreActions } from "./reaction.store";
 import { IssueRelationStore } from "./relation.store";
@@ -65,6 +68,7 @@ export interface IIssueDetail
     IIssueStoreActions,
     IIssueReactionStoreActions,
     IIssueLinkStoreActions,
+    IIssuePropertyValueStoreActions,
     IIssueSubIssuesStoreActions,
     IIssueSubscriptionStoreActions,
     IIssueAttachmentStoreActions,
@@ -118,6 +122,7 @@ export interface IIssueDetail
   commentReaction: IIssueCommentReactionStore;
   subIssues: IIssueSubIssuesStore;
   link: IIssueLinkStore;
+  propertyValue: IIssuePropertyValueStore;
   subscription: IIssueSubscriptionStore;
   relation: IIssueRelationStore;
 }
@@ -158,6 +163,7 @@ export class IssueDetail implements IIssueDetail {
   attachment: IIssueAttachmentStore;
   subIssues: IIssueSubIssuesStore;
   link: IIssueLinkStore;
+  propertyValue: IIssuePropertyValueStore;
   subscription: IIssueSubscriptionStore;
   relation: IIssueRelationStore;
   activity: IIssueActivityStore;
@@ -213,6 +219,7 @@ export class IssueDetail implements IIssueDetail {
     this.commentReaction = new IssueCommentReactionStore(this);
     this.subIssues = new IssueSubIssuesStore(this, serviceType);
     this.link = new IssueLinkStore(this, serviceType);
+    this.propertyValue = new IssuePropertyValueStore(this);
     this.subscription = new IssueSubscriptionStore(this, serviceType);
     this.relation = new IssueRelationStore(this);
   }
@@ -255,8 +262,8 @@ export class IssueDetail implements IIssueDetail {
     this.openWidgets = state;
     if (this.lastWidgetAction) this.lastWidgetAction = null;
   };
-  setLastWidgetAction = (action: TWorkItemWidgets) => {
-    this.openWidgets = [action];
+  setLastWidgetAction = (widget: TWorkItemWidgets) => {
+    this.openWidgets = [widget];
   };
   toggleOpenWidget = (state: TWorkItemWidgets) => {
     if (this.openWidgets && this.openWidgets.includes(state))
@@ -331,6 +338,18 @@ export class IssueDetail implements IIssueDetail {
   ) => this.link.updateLink(workspaceSlug, projectId, issueId, linkId, data);
   removeLink = async (workspaceSlug: string, projectId: string, issueId: string, linkId: string) =>
     this.link.removeLink(workspaceSlug, projectId, issueId, linkId);
+
+  // property values
+  fetchPropertyValues = async (workspaceSlug: string, projectId: string, issueId: string) =>
+    this.propertyValue.fetchPropertyValues(workspaceSlug, projectId, issueId);
+  fetchPropertyValuesBatch = async (workspaceSlug: string, projectId: string, issueIds: string[]) =>
+    this.propertyValue.fetchPropertyValuesBatch(workspaceSlug, projectId, issueIds);
+  updatePropertyValues = async (
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    propertyValues: TIssuePropertyValues
+  ) => this.propertyValue.updatePropertyValues(workspaceSlug, projectId, issueId, propertyValues);
 
   // sub issues
   fetchSubIssues = async (workspaceSlug: string, projectId: string, issueId: string) =>
